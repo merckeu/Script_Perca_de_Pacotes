@@ -1,5 +1,5 @@
 Script_Perca_de_Pacotes
-Este script foi desenvolvido para monitorar a conectividade de 10 IPs diferentes através de pings. Caso a perda média total de pacotes ultrapasse 10% (ou o valor configurado), o script envia um alerta para um chat no Telegram.
+Este script tem como objetivo monitorar a conectividade de 10 IPs diferentes através de pings. Caso a perda média total de pacotes ultrapasse 10% (ou o valor configurado), o script envia um alerta para um chat no Telegram.
 
 Como Usar
 Configure as variáveis do Telegram:
