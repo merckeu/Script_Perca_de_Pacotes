@@ -4,7 +4,7 @@
 :local limitePerda 10; # Limite de perda (%) para alerta
 
 # Configurações
-:global ipsParaMonitorar ("8.8.8.8", "8.8.4.4", "186.192.81.143", "31.13.80.8", "1.1.1.1", "1.0.0.1", "200.192.232.8", "186.192.81.143", "200.147.3.157", "200.160.7.193"); 
+:global ipsParaMonitorar ("8.8.8.8", "8.8.4.4", "142.251.133.78", "31.13.80.8", "1.1.1.1", "1.0.0.1", "200.192.232.8", "186.192.81.143", "200.147.3.157", "200.160.7.193"); 
 :local totalPings 10; # Número de pings por IP
 :local intervalo 00:00:00.5; # Intervalo entre pings (em segundos)
 
