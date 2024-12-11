@@ -1,0 +1,48 @@
+# Variáveis do Telegram
+:local telegramBotToken "XXXXXXXXXXXXXXX"; # Token do bot do Telegram
+:local chatId "XXXXXXXXXXXXXXX"; # ID do chat
+:local limitePerda 10; # Limite de perda (%) para alerta
+
+# Configurações
+:global ipsParaMonitorar ("8.8.8.8", "8.8.4.4", "142.251.133.78", "31.13.80.8", "1.1.1.1", "1.0.0.1", "200.192.232.8", "186.192.81.143", "200.147.3.157", "200.160.7.193"); 
+:local totalPings 10; # Número de pings por IP
+:local intervalo 00:00:00.5; # Intervalo entre pings (em segundos)
+
+# Variáveis de controle
+:local perdaTotal 0;
+:local totalPingsRealizados 0;
+:local ipsComPerda ""; # Variável para armazenar IPs com perda
+
+# Monitoramento
+:foreach ip in=$ipsParaMonitorar do={
+    :local perdasIP 0;
+    
+    # Realiza o ping para cada IP
+    :for i from=1 to=$totalPings do={
+        :local resposta [:ping $ip count=1 interval=$intervalo];
+        :if ($resposta = 0) do={ # Verifica se o ping falhou
+            :set perdasIP ($perdasIP + 100); # Contabiliza 100% de perda
+        }
+        :set totalPingsRealizados ($totalPingsRealizados + 1);
+    }
+    
+    # Calcula a perda média por IP
+    :local perdaMediaIP ($perdasIP / $totalPings);
+    :put ("IP: $ip - Perda média: $perdaMediaIP%");
+    :set perdaTotal ($perdaTotal + $perdasIP);
+    
+    # Adiciona o IP à lista de IPs com perda se ultrapassar o limite
+    :if ($perdaMediaIP > $limitePerda) do={
+        :set ipsComPerda ($ipsComPerda . "IPs com perda: " . $ip . " (" . $perdaMediaIP . "%)%0A");
+    }
+}
+
+# Cálculo da perda total
+:gl perdaMediaTotal ($perdaTotal / $totalPingsRealizados);
+:put ("Perda média total: $perdaMediaTotal%");
+
+# Envia alerta para o Telegram se a perda média ultrapassar o limite configurado
+:if ($perdaMediaTotal > $limitePerda) do={
+    :local mensagemAlerta ("%F0%9F%9F%A9%20Perda%20M%C3%A9dia%20Total:%20" . $perdaMediaTotal . "%25%0A" . $ipsComPerda);
+    /tool fetch url=("https://api.telegram.org/bot" . $telegramBotToken . "/sendMessage\?chat_id=" . $chatId . "&text=" . $mensagemAlerta) keep-result=no;
+}
