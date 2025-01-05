@@ -1,3 +1,12 @@
+##################################################
+##
+##             MORETTIMORETTI CONSULTORIA  MK-AUTH E MIKROTIK
+##
+##			www.morettimoretti.ddns.net
+##
+##################################################
+
+########### Altere conforme sua necessidade ################
 # Variáveis do Telegram
 :local telegramBotToken "XXXXXXXXXXXXXX"; # Token do bot do Telegram
 :local chatId "XXXXXXXXXXXXXXXX"; # ID do chat
@@ -20,22 +29,23 @@
     :for i from=1 to=$totalPings do={
         :local resposta [:ping $ip count=1 interval=$intervalo];
         :if ($resposta = 0) do={ # Verifica se o ping falhou
-            :set perdasIP ($perdasIP + 100); # Contabiliza 100% de perda
+            :set perdasIP ($perdasIP + 1); # Contabiliza 1 para perda
         }
         :set totalPingsRealizados ($totalPingsRealizados + 1);
     }
     
     # Calcula a perda média por IP
-    :local perdaMediaIP ($perdasIP / $totalPings);
+    :local perdaMediaIP (($perdasIP / $totalPings) * 100); # Calcula a perda em % por IP
     :put ("IP: $ip - Perda média: $perdaMediaIP%");
     :set perdaTotal ($perdaTotal + $perdasIP);
 }
 
 # Cálculo da perda total
-:gl perdaMediaTotal ($perdaTotal / $totalPingsRealizados);
+:local perdaMediaTotal (($perdaTotal / ($totalPingsRealizados * [len $ipsParaMonitorar])) * 100);
 :put ("Perda média total: $perdaMediaTotal%");
 
 # Envia alerta para o Telegram se a perda média ultrapassar o limite configurado
 :if ($perdaMediaTotal > $limitePerda) do={
-    /tool fetch url=("https://api.telegram.org/bot" . $telegramBotToken . "/sendMessage\?chat_id=" . $chatId . "&text=%F0%9F%9F%A9%20Perda%20M%C3%A9dia%20Total:%20" . $perdaMediaTotal . "%25") keep-result=no;
+    :local mensagemAlerta ("%F0%9F%9F%A9%20Perda%20M%C3%A9dia%20Total:%20" . [:tostr $perdaMediaTotal] . "%25%0A");
+    /tool fetch url=("https://api.telegram.org/bot" . $telegramBotToken . "/sendMessage?chat_id=" . $chatId . "&text=" . $mensagemAlerta) keep-result=no;
 }
